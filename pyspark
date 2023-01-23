@@ -1,0 +1,331 @@
+#### SPARK ####
+
++----------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------+
+| Transformação RDD                       |  Transformação Dataframe         | Description                                                                                                             |
+|----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| x = numeros.map(lambda x: x * 2)        |                                  | aplicar função a todos os elementos do rdd                                                                              |
+| x.mapValues(lambda x: x +1)             |                                  | aplicar função somente nos valores das chaves                                                                           |
+| x = numeros.filter(lambda x: x > 2)     | df.filter(df.colunaA.isNull())   | filtrar dados (where)                                                                                                   |
+| flatMap                                 |                                  |                                                                                                                         |
+| mapPartitions                           |                                  |                                                                                                                         |
+| amostra = numeros.sample(True,0.5,1)    |                                  | gerar amostra com ou sem reposição ("True of False", % da amostra, probabilidade do número fazer parte da % da amostra) |
+| x = numeros.union(numeros2)             |                                  | unir dois rdd's                                                                                                         |
+| comum = numeros.intersection(numeros2)  |                                  | ver registros em comum entre os rdd's                                                                                   |
+| x = numeros.subtract(numeros2)          |                                  | ver registros diferentes entre os rdd's                                                                                 |
+| x = numeros.subtractByKey(numeros2)     |                                  | ver registros diferentes por chave entre os rdd's                                                                       |
+| distinct                                |                                  |                                                                                                                         |
+| groupByKey                              |                                  |                                                                                                                         |
+| reduceByKey                             |                                  |                                                                                                                         |
+| sortByKey                               |                                  |                                                                                                                         |
+| numeros.join(numeros2)                  |                                  | inner join dos rdd's                                                                                                    |
+| cogroup                                 |                                  |                                                                                                                         |
+| x = numeros.cartesian(numeros2)         |                                  | pares do produto cartesiano de dois valores                                                                             |
+| pipe                                    |                                  |                                                                                                                         |
+| coalesce                                |                                  |                                                                                                                         |
+| repartition                             |                                  |                                                                                                                         |
+| repartitionAndSortWithinPartitions      |                                  |                                                                                                                         |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
++------------------------------------+-----------------------------------------+
+| Ações                              | Description                             |
+|------------------------------------|-----------------------------------------|
+| reduce                             |                                         |
+| .collect()                         | trás todos os dados                     |
+| .count()                           | contar quantidade de elementos          |
+| .mean()                            | calcular média entre elementos          |
+| .sum()                             | somar elementos                         | 
+| .max()                             | descobrir o maior valor                 |
+| .min()                             | descobrir o menor valor                 |
+| .stdev()                           | descobrir o desvio padrão               |
+| first                              |                                         |
+| .take(5)                           | ver a quantidade de elementos de um rdd |
+| x.keys()                           | extrair as chaves                       |
+| x.values()                         |                                         |
+| takeSample                         |                                         |
+| takeOrdered                        |                                         |
+| saveAsTextFile                     |                                         |
+| saveAsSequenceFile                 |                                         |
+| saveAsObjectFile                   |                                         |
+| x.countByKey()                     | realizar contagem pela chave            |
+| x.countByValue()                   | realizar contagem pelo valor            |
+| foreach                            |                                         |
+| show                               |                                         |
+| .top(5)                            | mostra os maiores elementos             |
++------------------------------------------------------------------------------+
+
++-------------------------------------------------------------------------------------------------------+-------------------------------------------------------------+
+| Import                                                                                                | Description                                                 |
+|-------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| parquet                                                                                               | importação de arquivo parquet                               |
+| df = spark.read.format("avro").load("") / df.show(truncate=False)                                     | importação de arquivo avro                                  |
+| df = spark.read.csv("") / df.show(truncate=False)                                                     | importação de arquivo csv                                   |
+| df = spark.read.load("/home/yuri/download/despachantes.csv", header=False , format="csv", sep=",")    | importação de qualquer tipo de arquivo suportado pelo spark |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Dataset** - Disponível apenas em Java e Scala
+
+
+Bibliotecas mais utilizadas
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import sum
+from pyspark.sql.functions import expr
+from pyspark.sql import functions as Func
+from pyspark.sql.functions import *
+
+
+Exemplos de Funções utilizadas
+
+#####Criar dataframe no shell, sem schema#####
+
+>>>from pyspark.sql import SparkSession
+>>>df1 = spark.createDataFrame([("Pedro",10),("Maria",20),("José",40)])
+>>>df1.show()
++-----+---+                                                                     
+|   _1| _2|
++-----+---+
+|Pedro| 10|
+|Maria| 20|
+| José| 40|
++-----+---+
+
+#####Criar dataframe no shell, com schema#####
+
+>>>from pyspark.sql import SparkSession
+>>>schema = "Id INT, Nome STRING"
+>>>dados = [[1,"Pedro"],[2,"Maria"]]
+>>>df2 = spark.createDataFrame(dados, schema)
+>>>df2.show()
++---+-----+
+| Id| Nome|
++---+-----+
+|  1|Pedro|
+|  2|Maria|
++---+-----+
+
+#####Criar dataframe no shell, com schema e função de agregação sum / select#####
+
+>>>schema2 = "Produtos STRING, Qtd_venda INT"
+>>>vendas = [["Geladeira",10],["Microondas",15],["Fogao",30],["Geladeira",40]]
+>>>df3 = spark.createDataFrame(vendas, schema2)
+>>>df3.show()
++----------+---------+
+|  Produtos|Qtd_venda|
++----------+---------+
+| Geladeira|       10|
+|Microondas|       15|
+|     Fogao|       30|
+| Geladeira|       40|
++----------+---------+
+
+#Soma com groupBy e agragação (agg)
+>>>soma_de_vendas = df3.groupBy("Produtos").agg(sum("Qtd_venda")) 
+>>>soma_de_vendas.show()
++----------+--------------+
+|  Produtos|sum(Qtd_venda)|
++----------+--------------+
+|Microondas|            15|
+| Geladeira|            50|
+|     Fogao|            30|
++----------+--------------+
+
+#Função select#
+>>>soma_de_vendas.select("Produtos").show()
++----------+
+|  Produtos|
++----------+
+|Microondas|
+| Geladeira|
+|     Fogao|
++----------+
+
+>>>soma_de_vendas.select("sum(Qtd_venda)", "Produtos").show()
++--------------+----------+
+|sum(Qtd_venda)|  Produtos|
++--------------+----------+
+|            15|Microondas|
+|            50| Geladeira|
+|            30|     Fogao|
++--------------+----------+
+
+#Criar expressões com select
+>>>from pyspark.sql.functions import expr
+>>>df3.select("Qtd_venda", "Produtos", expr("Qtd_venda * 0.2")).show()
++---------+----------+-----------------+
+|Qtd_venda|  Produtos|(Qtd_venda * 0.2)|
++---------+----------+-----------------+
+|       10| Geladeira|              2.0|
+|       15|Microondas|              3.0|
+|       30|     Fogao|              6.0|
+|       40| Geladeira|              8.0|
++---------+----------+-----------------+
+
+#####Ver schema do dataframe#####
+>>>df3.schema
+StructType([StructField('Produtos', StringType(), True), StructField('Qtd_venda', IntegerType(), True)])
+
+#####Ver colunas do dataframe#####
+>>>df3.columns
+['Produtos', 'Qtd_venda']
+
+#####Ingerir dados de outras fontes com schema#####
+>>>from pyspark.sql.types import *
+>>>schema_arquivo = "id INT, nome STRING, status STRING, cidade STRING, vendas INT, data STRING"
+>>>arquivo_desp = spark.read.csv("/home/yuri/download/despachantes.csv", header=False, schema = schema_arquivo)
+>>>arquivo_desp.show()
++---+-------------------+------+-------------+------+----------+
+| id|               nome|status|       cidade|vendas|      data|
++---+-------------------+------+-------------+------+----------+
+|  1|   Carminda Pestana| Ativo|  Santa Maria|    23|2020-08-11|
+|  2|    Deolinda Vilela| Ativo|Novo Hamburgo|    34|2020-03-05|
+|  3|   Emídio Dornelles| Ativo| Porto Alegre|    34|2020-02-05|
+|  4|Felisbela Dornelles| Ativo| Porto Alegre|    36|2020-02-05|
+|  5|     Graça Ornellas| Ativo| Porto Alegre|    12|2020-02-05|
+|  6|   Matilde Rebouças| Ativo| Porto Alegre|    22|2019-01-05|
+|  7|    Noêmia   Orriça| Ativo|  Santa Maria|    45|2019-10-05|
+|  8|      Roque Vásquez| Ativo| Porto Alegre|    65|2020-03-05|
+|  9|      Uriel Queiroz| Ativo| Porto Alegre|    54|2018-05-05|
+| 10|   Viviana Sequeira| Ativo| Porto Alegre|     0|2020-09-05|
++---+-------------------+------+-------------+------+----------+
+
+#####Ingerir dados de outras fontes sem schema, inferência de schema#####
+>>>arquivo_desp_autoschema = spark.read.load("/home/yuri/download/despachantes.csv", header=False ,format="csv", sep=",", inferSchema=True)
+>>>arquivo_desp_autoschema.show()
++---+-------------------+-----+-------------+---+-------------------+
+|_c0|                _c1|  _c2|          _c3|_c4|                _c5|
++---+-------------------+-----+-------------+---+-------------------+
+|  1|   Carminda Pestana|Ativo|  Santa Maria| 23|2020-08-11 00:00:00|
+|  2|    Deolinda Vilela|Ativo|Novo Hamburgo| 34|2020-03-05 00:00:00|
+|  3|   Emídio Dornelles|Ativo| Porto Alegre| 34|2020-02-05 00:00:00|
+|  4|Felisbela Dornelles|Ativo| Porto Alegre| 36|2020-02-05 00:00:00|
+|  5|     Graça Ornellas|Ativo| Porto Alegre| 12|2020-02-05 00:00:00|
+|  6|   Matilde Rebouças|Ativo| Porto Alegre| 22|2019-01-05 00:00:00|
+|  7|    Noêmia   Orriça|Ativo|  Santa Maria| 45|2019-10-05 00:00:00|
+|  8|      Roque Vásquez|Ativo| Porto Alegre| 65|2020-03-05 00:00:00|
+|  9|      Uriel Queiroz|Ativo| Porto Alegre| 54|2018-05-05 00:00:00|
+| 10|   Viviana Sequeira|Ativo| Porto Alegre|  0|2020-09-05 00:00:00|
++---+-------------------+-----+-------------+---+-------------------+
+
+>>>arquivo_desp_autoschema.schema
+StructType([StructField('_c0', IntegerType(), True), StructField('_c1', StringType(), True), StructField('_c2', StringType(), True), StructField('_c3', StringType(), True), StructField('_c4', IntegerType(), True), StructField('_c5', TimestampType(), True)])
+
+#####Filtrar os dados / operadores lógicos#####
+>>>from pyspark.sql import functions as Func
+>>>arquivo_desp.select("id", "nome", "vendas").where(Func.col("vendas") > 20).show()
++---+-------------------+------+
+| id|               nome|vendas|
++---+-------------------+------+
+|  1|   Carminda Pestana|    23|
+|  2|    Deolinda Vilela|    34|
+|  3|   Emídio Dornelles|    34|
+|  4|Felisbela Dornelles|    36|
+|  6|   Matilde Rebouças|    22|
+|  7|    Noêmia   Orriça|    45|
+|  8|      Roque Vásquez|    65|
+|  9|      Uriel Queiroz|    54|
++---+-------------------+------+
+
+#Operadores lógicos#
+e = &
+ou = |
+not = ~
+maior = >
+menor = <
+maior ou igual = >=
+menor ou igual = <=
+
+#Filtro com mais de uma condição#
+>>>arquivo_desp.select("id", "nome", "vendas").where((Func.col("vendas") > 20) & (Func.col("vendas") < 30)).show()
++---+----------------+------+
+| id|            nome|vendas|
++---+----------------+------+
+|  1|Carminda Pestana|    23|
+|  6|Matilde Rebouças|    22|
++---+----------------+------+
+
+#####Renomear nome de colunas#####
+>>>novodf = arquivo_desp.withColumnRenamed("vendas","vendas_realizadas")
+>>>novodf.show()
++---+-------------------+------+-------------+-----------------+----------+
+| id|               nome|status|       cidade|vendas_realizadas|      data|
++---+-------------------+------+-------------+-----------------+----------+
+|  1|   Carminda Pestana| Ativo|  Santa Maria|               23|2020-08-11|
+|  2|    Deolinda Vilela| Ativo|Novo Hamburgo|               34|2020-03-05|
+|  3|   Emídio Dornelles| Ativo| Porto Alegre|               34|2020-02-05|
+|  4|Felisbela Dornelles| Ativo| Porto Alegre|               36|2020-02-05|
+|  5|     Graça Ornellas| Ativo| Porto Alegre|               12|2020-02-05|
+|  6|   Matilde Rebouças| Ativo| Porto Alegre|               22|2019-01-05|
+|  7|    Noêmia   Orriça| Ativo|  Santa Maria|               45|2019-10-05|
+|  8|      Roque Vásquez| Ativo| Porto Alegre|               65|2020-03-05|
+|  9|      Uriel Queiroz| Ativo| Porto Alegre|               54|2018-05-05|
+| 10|   Viviana Sequeira| Ativo| Porto Alegre|                0|2020-09-05|
++---+-------------------+------+-------------+-----------------+----------+
+
+#####Mudar o datatype do dado#####
+>>>df_datatype = arquivo_desp.withColumn("data2", Func.col("data").cast("string"))
+>>>df_datatype.schema
+StructType([StructField('id', IntegerType(), True), StructField('nome', StringType(), True), StructField('status', StringType(), True), StructField('cidade', StringType(), True), StructField('vendas', IntegerType(), True), StructField('data', StringType(), True), StructField('data2', StringType(), True)])
+
+>>>from pyspark.sql.functions import *
+>>>df_datatype2 = arquivo_desp.withColumn("data3", to_timestamp(Func.col("data"), "yyyy-mm-dd"))
+>>>df_datatype2.schema
+StructType([StructField('id', IntegerType(), True), StructField('nome', StringType(), True), StructField('status', StringType(), True), StructField('cidade', StringType(), True), StructField('vendas', IntegerType(), True), StructField('data', StringType(), True), StructField('data3', TimestampType(), True)])
+
+
+#####Select em colunas com datatype timestamp / funções groupby, orderby, count, sum#####
+#A busca é possível mesmo se a coluna não estiver como timestamp
+>>>df_datatype2.select(year("data")).show()
++----------+
+|year(data)|
++----------+
+|      2020|
+|      2020|
+|      2020|
+|      2020|
+|      2020|
+|      2019|
+|      2019|
+|      2020|
+|      2018|
+|      2020|
++----------+
+
+>>>df_datatype2.select("nome", year("data")).orderBy("nome").show()
++-------------------+----------+
+|               nome|year(data)|
++-------------------+----------+
+|   Carminda Pestana|      2020|
+|    Deolinda Vilela|      2020|
+|   Emídio Dornelles|      2020|
+|Felisbela Dornelles|      2020|
+|     Graça Ornellas|      2020|
+|   Matilde Rebouças|      2019|
+|    Noêmia   Orriça|      2019|
+|      Roque Vásquez|      2020|
+|      Uriel Queiroz|      2018|
+|   Viviana Sequeira|      2020|
++-------------------+----------+
+
+>>>df_datatype2.select("data").groupBy(year("data")).count().show()
++----------+-----+
+|year(data)|count|
++----------+-----+
+|      2018|    1|
+|      2019|    2|
+|      2020|    7|
++----------+-----+
+
+>>>df_datatype2.select(Func.sum("vendas")).show()
++-----------+
+|sum(vendas)|
++-----------+
+|        325|
++-----------+
+
+>>>df_datatype2.groupBy(year("data")).agg(sum("vendas")).show()
++----------+-----------+
+|year(data)|sum(vendas)|
++----------+-----------+
+|      2018|         54|
+|      2019|         67|
+|      2020|        204|
++----------+-----------+
