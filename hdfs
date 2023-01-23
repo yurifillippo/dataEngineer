@@ -1,0 +1,33 @@
+#Upload de um arquivo no HDFS
+hdfs dfs -put /home/user/arquivo.txt /user/hdfs/diretorio/
+
+#Download de um arquivo do HDFS
+hdfs dfs -get /user/hdfs/diretorio/arquivo.txt /home/user/
+
+#Copiar arquivo para maquina local
+hdfs dfs -copyToLocal /user/hdfs/diretorio/arquivo.txt /home/user/
+
+#Ver arquivos no diretório
+hdfs dfs -ls /user/hdfs/diretorio/
+
+#Criar diretório
+hdfs dfs -mkdir /user/hdfs/diretorio/diretorio1
+
+#Abrir arquivo
+hdfs dfs -cat /user/hdfs/diretorio/arquivo.txt
+
+#Criar arquivo com base em outro
+hdfs dfs -cat /user/hdfs/diretorio/arquivo.txt | head -n 91 | tail -n 1 > novoarquivo.csv; sed 's/,/\n/g' novoarquivo.csv
+
+#Copiar arquivo entre diretórios HDFS
+hdfs dfs -cp /user/hdfs/diretorio/arquivo.txt /user2/hdfs/diretorio/arquivo.txt
+
+#Mover arquivos / trocar nome
+hdfs dfs -mv /user/hdfs/diretorio/arquivo.txt /user2/hdfs/diretorio/arquivo2.txt
+
+#Remover arquivo do diretório
+hdfs dfs -rm  /user/hdfs/diretorio/arquivo.txt
+
+#Exibir ultimas linhas do arquivo
+hdfs dfs -tail /user/hdfs/diretorio/arquivo.txt
+
